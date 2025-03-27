@@ -1,4 +1,5 @@
-use axum::response::Html;
+use axum::{extract::Query, response::Html};
+use serde::Deserialize;
 use std::error::Error;
 use anchor_client::solana_sdk::commitment_config::CommitmentConfig;
 use anchor_client::solana_sdk::pubkey::Pubkey;
@@ -8,7 +9,12 @@ use solana_sdk::signature::Signer;
 use tokio::task;
 
 use crate::web3::contract::connect_to_contract; 
-//use crate::web3::contract::get_balance;
+use crate::web3::contract::get_balance;
+
+#[derive(Deserialize)]
+pub struct BalanceQuery {
+    address: String,
+}
 
 
 pub async fn home_page() -> Html<String> {
@@ -30,17 +36,15 @@ pub async fn home_page() -> Html<String> {
     }
 }
 
-
-/*async fn balance() -> String {
-
-    let address = "CBkXFbBBdQDHZ33MiRYika775MgAZMbKorZZ84pcpJMf".to_string();
+pub async fn balance(Query(params): Query<BalanceQuery>) -> Html<String>  {
+    let address = params.address.clone(); 
 
     let result = task::spawn_blocking(move || get_balance(&address))
         .await 
         .expect("Failed to join blocking task"); 
 
     match result {
-        Ok(balance) => Html(format!("<h1>Balance: {:.6} SOL</h1>", balance)),
-        Err(e) => Html(format!("<h1>Error</h1><p>{}</p>", e)),
+        Ok(balance) => Html(format!("{:.6}", balance as f64 / 1_000_000_000.0)),
+        Err(e) => Html(format!("{}", e)),
     }
-}*/
+}
