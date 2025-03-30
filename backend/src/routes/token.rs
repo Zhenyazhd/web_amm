@@ -211,7 +211,7 @@ async fn get_user_tokens(
     State(state): State<AppState>,
     auth_header: TypedHeader<Authorization<Bearer>>,
 ) -> Json<Vec<PoolTokens>> {
-
+    println!("get_user_tokens");
     let token = auth_header.token(); 
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
@@ -233,6 +233,8 @@ async fn get_user_tokens(
     while let Some(token) = cursor.try_next().await.unwrap() {
         tokens.push(token);
     }
+    println!("get_user_tokens {:?}", tokens);
+
 
     Json(tokens)
 }

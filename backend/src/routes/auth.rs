@@ -65,7 +65,7 @@ async fn login(
             });
         }
     };
-    println!("user {:?}", user);
+    //println!("user {:?}", user);
 
     if let Some(user) = user {
         if verify(&payload.password, &user.password).unwrap() {

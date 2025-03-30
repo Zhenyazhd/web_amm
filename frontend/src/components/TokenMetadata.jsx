@@ -22,7 +22,6 @@ const TokenMetadataForm = ({ address }) => {
         name: "",
         symbol: "",
         uri: "",
-        decimals: 0,
         description: ""
     });
 
@@ -72,6 +71,8 @@ const TokenMetadataForm = ({ address }) => {
                 metaplexProgramId
             );
 
+            console.log(tokenData);
+
             const builder = createMetadataAccountV3(umi, {
                     metadata: fromWeb3JsPublicKey(metadataPda),
                     mint: fromWeb3JsPublicKey(mint),
@@ -79,13 +80,13 @@ const TokenMetadataForm = ({ address }) => {
                     mintAuthority: fromWeb3JsPublicKey(payer),
                     updateAuthority: fromWeb3JsPublicKey(payer),
                     data: {
-                    name: tokenData.name,
-                    symbol: tokenData.symbol,
-                    uri: uribase + address,
-                    sellerFeeBasisPoints: 0,
-                    creators: none(),
-                    collection: none(),
-                    uses: none(),
+                        name: tokenData.name,
+                        symbol: tokenData.symbol,
+                        uri: uribase + address,
+                        sellerFeeBasisPoints: 0,
+                        creators: none(),
+                        collection: none(),
+                        uses: none(),
                     },
                     isMutable: true,
                     collectionDetails: none(),
@@ -157,16 +158,6 @@ const TokenMetadataForm = ({ address }) => {
             onChange={handleChange}
             fullWidth
         />
-
-        <TextField
-            label="Decimals"
-            name="decimals"
-            type="number"
-            value={tokenData.decimals}
-            onChange={handleChange}
-            fullWidth
-        />
-
 
         <TextField
             label="Description"

@@ -45,6 +45,20 @@ const PoolManager = () => {
     const tokens = useTokens();
 
 
+    const getTokenName = (address) => {
+        try {
+            const filteredTokens = tokens.deployedTokens.filter(token =>
+                token.address.toLowerCase().includes(address.toLowerCase())
+            );
+            return filteredTokens[0].name;
+        } catch {
+            console.log('token nor found.');
+            return 'Undefined';
+        }
+    }
+
+
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -100,7 +114,7 @@ const PoolManager = () => {
     const initializePool = async () => {
        
         if (!publicKey) {
-            alert("Подключите кошелек!");
+            alert("Connect the wallet!");
             return;
         }
 
@@ -186,9 +200,9 @@ const PoolManager = () => {
         }
     };
 
-    const addLiquidity = async () => {
+    /*const addLiquidity = async () => {
         if (!publicKey || !poolAddress) {
-            alert("Подключите кошелек и создайте пул!");
+            alert("Connect the wallet!");
             return;
         }
 
@@ -205,22 +219,15 @@ const PoolManager = () => {
         } catch (error) {
             console.error("Ошибка добавления ликвидности:", error);
         }
-    };
-    /**             <TextField
-                    label="TOKEN X"
-                    name="token1"
-                    type="string"
-                    value={poolData.token1}
-                    onChange={handleChange}
-                    fullWidth
-                /> */
+    };*/
+
 
     return (
 
         <Box
             sx={{
                 display: "flex",
-                border: "2px solid red",
+                //border: "2px solid red",
                 flexDirection: "column", 
                 alignItems: "center",
                 justifyContent: "center", 
@@ -329,21 +336,45 @@ const PoolManager = () => {
                                     border: '1px solid rgba(255, 255, 255, 0.1)'
                                 }}
                             >
-                         <Typography variant="subtitle1" sx={{ color: 'black', mb: 1 }}>
+                                <Typography variant="subtitle1" sx={{ color: 'black', mb: 1 }}>
                                     Pool #{index + 1}
                                 </Typography>
                                 
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Typography variant="body2" sx={{ color: 'black' }}>
+                                    <Typography variant="body2" 
+                                        sx={{ color: 'black',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
                                         <strong>Address of the pool:</strong> {pool.address}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'black' }}>
-                                        <strong>Token X:</strong> {pool.token_x}
+                                    <Typography variant="body2" 
+                                        sx={{ color: 'black',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        <strong>Token X:</strong> {getTokenName(pool.token_x)} - {pool.token_x}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'black' }}>
-                                        <strong>Token Y:</strong> {pool.token_y}
+                                    <Typography variant="body2" 
+                                        sx={{ color: 'black',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        <strong>Token Y:</strong> {getTokenName(pool.token_y)} - {pool.token_y}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'black' }}>
+                                    <Typography variant="body2" 
+                                        sx={{ color: 'black',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
                                         <strong>LP token:</strong> {pool.token_lp}
                                     </Typography>
                                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>

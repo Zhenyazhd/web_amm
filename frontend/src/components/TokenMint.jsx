@@ -9,7 +9,7 @@ import {
 } from "@solana/spl-token";
  
 
-const TokenMintForm = ({ address }) => {
+const TokenMintForm = ({ address, decimals }) => {
     const { publicKey, signTransaction, connected } = useWallet();
     const [loading, setLoading] = useState(false);
     const [tokenMint, setTokenMint] = useState({
@@ -61,13 +61,13 @@ const TokenMintForm = ({ address }) => {
                   )
                 );
             }
-            
+
             tx.add(
                 createMintToInstruction(
                     mint, 
                     associatedTokenAddress,
                     publicKey, 
-                    tokenMint.amount * 10 ** 9
+                    tokenMint.amount * 10 ** decimals
                 )
             );
             

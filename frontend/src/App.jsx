@@ -72,10 +72,9 @@ const App = () => {
                                             <Header/>
                                             <Routes>
                                                 {/*<Route path="/" element={<WalletConnect />} />*/}
+                                                <Route path="/" element={<PoolManager />} />
                                                 <Route path="/exchange" element={<Exchange />} />
-
                                                 <Route path="/tokens" element={<Tokens />} />
-                                                <Route path="/pool" element={<PoolManager />} />
                                             </Routes>
                                         </Router>
                                     </Box>

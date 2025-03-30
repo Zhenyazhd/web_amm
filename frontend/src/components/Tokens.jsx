@@ -1,5 +1,5 @@
 import { useState, useEffect} from "react";
-import { Box, Button, Typography, Paper } from "@mui/material";
+import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection, clusterApiUrl, Transaction, SystemProgram, Keypair } from "@solana/web3.js";
@@ -15,15 +15,31 @@ import { useTokens } from '../components/TokensContext';
 const Tokens = () => {
     const { publicKey, signTransaction, connected } = useWallet();
     const [loading, setLoading] = useState(false);
+    const [decimals, setDecimals] = useState(0);
+
     const [init, setInit] = useState({
         statusInit: false,
         statusMint: false,
         address: ''
     });
+    const [deletingTokens, setDeletingTokens] = useState([]);
     const [tx, setTx] = useState("");
     const ws = useWebSocket();
     const tokens = useTokens();
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setDecimals(value);
+
+        console.log(value);
+    };
+
+    const getTokenDecimals = (address) => {
+        const filteredTokens = tokens.deployedTokens.filter(token =>
+            token.address.toLowerCase().includes(address.toLowerCase())
+        );
+        return filteredTokens[0].decimals;
+    }
 
     useEffect(() => {
         const fetchAndCheckTokens = () => {
@@ -67,6 +83,7 @@ const Tokens = () => {
             const connection = new Connection(endpoint);
             const mint = await Keypair.generate();
             const mintRent = await connection.getMinimumBalanceForRentExemption(82);
+
             const createMintTx = new Transaction().add(
                 SystemProgram.createAccount({
                     fromPubkey: publicKey,
@@ -77,7 +94,7 @@ const Tokens = () => {
                 }),
                 createInitializeMintInstruction(
                     mint.publicKey, 
-                    9, 
+                    decimals, 
                     publicKey, 
                     null,
                     TOKEN_PROGRAM_ID
@@ -100,6 +117,9 @@ const Tokens = () => {
     
             await connection.confirmTransaction(confirmationStrategy, "confirmed");
             setTx(txId);
+            setTimeout(() => {
+                setTx(null); // или setTx("") — в зависимости от твоей логики
+            }, 10000); 
             const result = await postData('tokens/newtoken', { address: mint.publicKey.toBase58(), name: '', symbol: '', description: ''}, localStorage.getItem("authToken")); 
         }catch(er){
             console.log('ERROR:', er);
@@ -109,12 +129,18 @@ const Tokens = () => {
     }
 
     const handleDelete = async (address) => {
-        const result = await postData('tokens/delete-token', { address: address, name: '', symbol: '', description: ''}, localStorage.getItem("authToken")); 
+        if (deletingTokens.includes(address)) return;
+        setDeletingTokens([...deletingTokens, address]);
+        try {
+            await postData('tokens/delete-token', { address: address, name: '', symbol: '', description: ''}, localStorage.getItem("authToken")); 
+        } catch (err) {
+            console.error("Ошибка удаления:", err);
+        }
     }
 
     return (
         <Box sx={{ 
-            border: "2px solid red",
+            //border: "2px solid red",
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center",
@@ -141,7 +167,7 @@ const Tokens = () => {
                             init.statusInit ? (
                                 <TokenMetadataForm address={init.address} />
                             ) : (
-                                <TokenMintForm address={init.address} />
+                                <TokenMintForm address={init.address} decimals={getTokenDecimals(init.address)} />
                             )
                         } 
                         
@@ -150,9 +176,30 @@ const Tokens = () => {
                         </Button>
                     </Box>
                 ) : (
-                    <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={handleDeploy} variant="contained" disabled={loading}>
-                        {loading ? "Deploying..." : "DEPLOY NEW TOKEN"}
-                    </Button>        
+                    <Box           
+                        sx={{ 
+                            display: "flex", 
+                            flexDirection: "column", 
+                            gap: 2, 
+                            maxWidth: 400,
+                            '& .MuiInputBase-root': {
+                            backgroundColor: 'white'
+                            }
+                        }}
+                    >
+                        <TextField
+                            label="Decimals"
+                            name="decimals"
+                            type="number"
+                            value={decimals}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+            
+                        <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={handleDeploy} variant="contained" disabled={loading}>
+                            {loading ? "Deploying..." : "DEPLOY NEW TOKEN"}
+                        </Button>
+                    </Box>        
                 )
             }
                 
@@ -177,21 +224,24 @@ const Tokens = () => {
                                 </TableHead>
                                 <TableBody>
                                     {tokens.deployedTokens.map((token, index) => (
-                                        <TableRow key={index}>
+                                        <TableRow 
+                                            key={index}
+                                            sx={{ opacity: deletingTokens.includes(token.address) ? 0.5 : 1 }}
+                                        >
                                             <TableCell>
                                             {
                                             tokens.initializedTokens[token.address]? (
-                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleMint(token.address)} variant="contained" disabled={loading}>
+                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleMint(token.address)} variant="contained" disabled={loading || deletingTokens.includes(token.address)}>
                                                 {loading ? "Minting..." : "Mint"}
                                                 </Button> 
                                                 ) : ( 
-                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleInit(token.address)} variant="contained" disabled={loading}>
+                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleInit(token.address)} variant="contained" disabled={loading || deletingTokens.includes(token.address)}>
                                                     {loading ? "Initializing..." : "Init"}
                                                 </Button> )  
                                             }
                                             </TableCell>
                                             <TableCell>
-                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleDelete(token.address)} variant="contained" disabled={loading}>
+                                                <Button sx={{ backgroundColor: "#1a1a1a" }} onClick={() => handleDelete(token.address)} variant="contained" disabled={loading || deletingTokens.includes(token.address)}>
                                                     {loading ? "Deleting..." : "Delete"}
                                                 </Button> 
                                             </TableCell>

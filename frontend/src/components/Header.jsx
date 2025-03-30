@@ -70,13 +70,13 @@ const Header = () => {
         <AppBar position="fixed" sx={{ backgroundColor: "#1a1a1a", zIndex: 1000 }}>
             <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                    🌊 Solana Pools
+                    Solana Pools
                 </Typography>
 
                 <Box>
                     <Button component={Link} to="/exchange" color="inherit">Exchange</Button>
                     <Button component={Link} to="/tokens" color="inherit">Token Registry</Button>
-                    <Button component={Link} to="/pool" color="inherit">Pool Registry</Button>
+                    <Button component={Link} to="/" color="inherit">Pool Registry</Button>
                 </Box>
 
                 <Box>

@@ -34,22 +34,25 @@ export const TokensProvider = ({ children }) => {
         }
     }
 
+    const getTokenName = (address) => {
+        const filteredTokens = tokens.deployedTokens.filter(token =>
+            token.address.toLowerCase().includes(address.toLowerCase())
+        );
+        return filteredTokens[0].name;
+    }
+
+    const getTokenDecimals = (address) => {
+        const filteredTokens = tokens.deployedTokens.filter(token =>
+            token.address.toLowerCase().includes(address.toLowerCase())
+        );
+        return filteredTokens[0].decimals;
+    }
+
     useEffect(() => {
-        const fetchAndCheckTokens = async (added) => {
-            if(!added){
-                const cachedTokens = localStorage.getItem('cachedTokens');
-                const cachedTimestamp = localStorage.getItem('tokensCacheTimestamp');
-                const cacheExpiry = 5 * 60 * 1000; 
-
-                if (cachedTokens && cachedTimestamp && (Date.now() - parseInt(cachedTimestamp)) < cacheExpiry) {
-                    const {tokens, statusMap} = JSON.parse(cachedTokens);
-                    setInitializedTokens(statusMap);
-                    setDeployedTokens(tokens);
-                    return;
-                }
-            }
-
+        const fetchAndCheckTokens = async () => {
+          
             const result = await getData('tokens/token-list', {}, localStorage.getItem("authToken"));
+
             const endpoint = clusterApiUrl("devnet");
             const connection = new Connection(endpoint);
             const statusMap = {};
@@ -64,29 +67,20 @@ export const TokensProvider = ({ children }) => {
                     el.decimals = mintInfo.decimals;
                 }
             }
-
-            localStorage.setItem('cachedTokens', JSON.stringify({
-                tokens: result,
-                statusMap: statusMap
-            }));
-            localStorage.setItem('tokensCacheTimestamp', Date.now().toString());
-
             setInitializedTokens(statusMap);
             setDeployedTokens(result);
         };
 
-        if (forceUpdate) {
-            fetchAndCheckTokens(true); 
-        }
-
-        fetchAndCheckTokens(false);
+        fetchAndCheckTokens();
     }, [forceUpdate]);
     
     return (
         <TokensContext.Provider value={{
             deployedTokens,
             initializedTokens,
-            setForceUpdate
+            getTokenName,
+            setForceUpdate,
+            getTokenDecimals
         }}>
             {children}
         </TokensContext.Provider>
